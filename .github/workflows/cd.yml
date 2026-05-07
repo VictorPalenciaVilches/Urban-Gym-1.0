@@ -1,0 +1,228 @@
+# ============================================================================
+# Urban GYM – Continuous Deployment (CD)
+# ============================================================================
+# Se activa DESPUÉS de que el CI pase exitosamente en la rama main.
+# Construye imágenes Docker para cada microservicio y despliega
+# el sistema completo.
+# ============================================================================
+
+name: "🚀 CD – Build & Deploy"
+
+on:
+  workflow_run:
+    workflows: ["🧪 CI – Tests & Coverage"]
+    types: [completed]
+    branches: [main]
+
+# ────────────────────────────────────────────────────────────────────────────
+# Permisos
+# ────────────────────────────────────────────────────────────────────────────
+permissions:
+  contents: read
+  packages: write
+
+# ────────────────────────────────────────────────────────────────────────────
+# Variables de entorno globales
+# ────────────────────────────────────────────────────────────────────────────
+env:
+  REGISTRY: ghcr.io
+  IMAGE_PREFIX: ${{ github.repository_owner }}/urbangym
+
+# ────────────────────────────────────────────────────────────────────────────
+# Jobs
+# ────────────────────────────────────────────────────────────────────────────
+jobs:
+
+  # ── Gate: Solo continuar si el CI fue exitoso ───────────────────────────
+  check-ci:
+    name: "🔒 Verificar CI"
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      - name: ✅ CI exitoso – Proceder al despliegue
+        run: echo "CI pasó correctamente. Iniciando despliegue..."
+
+  # ── 1. Construir imágenes Docker para cada microservicio ────────────────
+  build-images:
+    name: "🐳 Build · ${{ matrix.service }}"
+    runs-on: ubuntu-latest
+    needs: check-ci
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - service: api-gateway
+            port: 3000
+          - service: member-service
+            port: 3001
+          - service: booking-service
+            port: 3002
+          - service: facility-service
+            port: 3003
+          - service: iot-service
+            port: 3004
+          - service: workout-progress-service
+            port: 3005
+          - service: billing-service
+            port: 3006
+          - service: recommendation-service
+            port: 3007
+
+    steps:
+      - name: 📥 Checkout del código
+        uses: actions/checkout@v4
+
+      - name: 🐳 Configurar Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: 🔐 Login en GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🏷️ Generar metadata de la imagen
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service }}
+          tags: |
+            type=sha,prefix=
+            type=ref,event=branch
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+
+      - name: 🏗️ Build y Push de la imagen Docker
+        uses: docker/build-push-action@v5
+        with:
+          context: ./${{ matrix.service }}
+          file: ./${{ matrix.service }}/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            PORT=${{ matrix.port }}
+
+  # ── 2. Build del Frontend ───────────────────────────────────────────────
+  build-frontend:
+    name: "🎨 Build · Frontend"
+    runs-on: ubuntu-latest
+    needs: check-ci
+
+    steps:
+      - name: 📥 Checkout del código
+        uses: actions/checkout@v4
+
+      - name: 🟢 Configurar Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: 📦 Instalar dependencias
+        run: npm ci
+        working-directory: frontend
+
+      - name: 🏗️ Build de producción
+        run: npm run build
+        working-directory: frontend
+        env:
+          VITE_API_URL: ${{ secrets.VITE_API_URL }}
+
+      - name: 📊 Subir artefacto del frontend
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-production
+          path: frontend/dist/
+          retention-days: 30
+
+  # ── 3. Despliegue (deploy stage) ────────────────────────────────────────
+  deploy:
+    name: "🚀 Deploy to Production"
+    runs-on: ubuntu-latest
+    needs: [build-images, build-frontend]
+    environment: production
+
+    steps:
+      - name: 📥 Checkout del código
+        uses: actions/checkout@v4
+
+      - name: 📥 Descargar artefacto del frontend
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-production
+          path: ./frontend-dist
+
+      - name: 🚀 Desplegar microservicios
+        run: |
+          echo "╔══════════════════════════════════════════════════╗"
+          echo "║        Urban GYM – Despliegue a Producción      ║"
+          echo "╠══════════════════════════════════════════════════╣"
+          echo "║                                                  ║"
+          echo "║  Servicios desplegados:                          ║"
+          echo "║    → API Gateway        (puerto 3000)            ║"
+          echo "║    → Member Service     (puerto 3001)            ║"
+          echo "║    → Booking Service    (puerto 3002)            ║"
+          echo "║    → Facility Service   (puerto 3003)            ║"
+          echo "║    → IoT Service        (puerto 3004)            ║"
+          echo "║    → Progress Service   (puerto 3005)            ║"
+          echo "║    → Billing Service    (puerto 3006)            ║"
+          echo "║    → Recommendation Svc (puerto 3007)            ║"
+          echo "║    → Frontend (static)                           ║"
+          echo "║                                                  ║"
+          echo "║  Commit:  ${{ github.sha }}                      ║"
+          echo "║  Branch:  ${{ github.ref_name }}                 ║"
+          echo "║  Actor:   ${{ github.actor }}                    ║"
+          echo "║                                                  ║"
+          echo "╚══════════════════════════════════════════════════╝"
+
+        # ─────────────────────────────────────────────────────────
+        # Para desplegar en un servidor real, descomenta y adapta
+        # una de las siguientes opciones:
+        #
+        # OPCIÓN A: Deploy con SSH a un VPS
+        # - name: Deploy via SSH
+        #   uses: appleboy/ssh-action@v1
+        #   with:
+        #     host: ${{ secrets.DEPLOY_HOST }}
+        #     username: ${{ secrets.DEPLOY_USER }}
+        #     key: ${{ secrets.DEPLOY_SSH_KEY }}
+        #     script: |
+        #       cd /opt/urbangym
+        #       docker compose pull
+        #       docker compose up -d --remove-orphans
+        #
+        # OPCIÓN B: Deploy a Railway
+        # - name: Deploy to Railway
+        #   uses: bervProject/railway-deploy@main
+        #   with:
+        #     railway_token: ${{ secrets.RAILWAY_TOKEN }}
+        #     service: urbangym
+        #
+        # OPCIÓN C: Deploy a Render
+        # - name: Trigger Render Deploy
+        #   run: |
+        #     curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK }}
+        # ─────────────────────────────────────────────────────────
+
+  # ── 4. Notificación de despliegue ───────────────────────────────────────
+  notify:
+    name: "📢 Notificación"
+    runs-on: ubuntu-latest
+    needs: deploy
+    if: always()
+
+    steps:
+      - name: 📋 Resultado del despliegue
+        run: |
+          if [ "${{ needs.deploy.result }}" == "success" ]; then
+            echo "✅ Despliegue exitoso"
+            echo "📅 Fecha: $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+            echo "🔗 Commit: ${{ github.sha }}"
+          else
+            echo "❌ Error en el despliegue"
+            echo "📋 Revisar los logs en: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          fi
