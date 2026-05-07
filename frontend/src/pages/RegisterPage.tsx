@@ -26,11 +26,7 @@ export default function RegisterPage() {
         phone: form.phone || undefined,
       });
 
-      if (data?.checkoutUrl) {
-        window.location.href = data.checkoutUrl;
-      } else {
-        navigate('/login');
-      }
+      navigate('/login');
     } catch (err: unknown) {
       const error = err as { response?: { data?: { message?: string } } };
       setError(error.response?.data?.message || 'Error al registrarse');
