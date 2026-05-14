@@ -89,7 +89,7 @@ describe('BillingService', () => {
       expect(result).toEqual({ message: 'Suscripción ya existe' });
     });
 
-    it('debería crear suscripción y retornar URL de checkout', async () => {
+    it('debería crear suscripción pending sin URL de checkout (pago desde perfil)', async () => {
       mocks.mockSingle
         .mockResolvedValueOnce({ data: null, error: null })
         .mockResolvedValueOnce({
@@ -100,8 +100,10 @@ describe('BillingService', () => {
       const result = await service.onMemberCreated({
         member_id: 'm-1', name: 'Juan', email: 'juan@test.com', plan: 'basic',
       });
-      expect(result.checkoutUrl).toBe('https://mp.test/checkout');
+      expect(result).not.toHaveProperty('checkoutUrl');
       expect(result.subscription).toBeDefined();
+      expect(result.message).toContain('perfil');
+      expect(mockMercadoPagoService.createPreference).not.toHaveBeenCalled();
     });
   });
 

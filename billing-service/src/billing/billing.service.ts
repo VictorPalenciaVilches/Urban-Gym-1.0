@@ -50,25 +50,10 @@ export class BillingService {
 
     if (error) throw new Error(error.message);
 
-    // Crear preference en MercadoPago
-    const { checkoutUrl, preferenceId } =
-      await this.mercadoPagoService.createPreference(
-        dto.member_id,
-        plan,
-        dto.email,
-        dto.name,
-      );
-
-    // Guardar preferenceId en BD
-    await client
-      .schema('billing')
-      .from('subscriptions')
-      .update({ stripe_customer_id: preferenceId })
-      .eq('id', data.id);
-
+    // No crear preferencia de Mercado Pago aquí: el socio completa el pago desde /perfil cuando quiera.
     return {
-      message: 'Suscripción creada. Redirigiendo a pago...',
-      checkoutUrl,
+      message:
+        'Suscripción creada en estado pendiente de pago. Completa el pago desde tu perfil.',
       subscription: data,
     };
   }

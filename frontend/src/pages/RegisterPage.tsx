@@ -26,7 +26,25 @@ export default function RegisterPage() {
         phone: form.phone || undefined,
       });
 
-      navigate('/login');
+      if (data?.accessToken && data?.refreshToken && data.member) {
+        localStorage.setItem('accessToken', data.accessToken);
+        localStorage.setItem('refreshToken', data.refreshToken);
+        localStorage.setItem(
+          'user',
+          JSON.stringify({
+            ...data.member,
+            role: 'member',
+          }),
+        );
+        navigate('/perfil', { replace: true });
+      } else {
+        navigate('/login', {
+          replace: true,
+          state: {
+            message: 'Cuenta creada. Inicia sesión y completa el pago desde tu perfil.',
+          },
+        });
+      }
     } catch (err: unknown) {
       const error = err as { response?: { data?: { message?: string } } };
       setError(error.response?.data?.message || 'Error al registrarse');
