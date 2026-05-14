@@ -1,0 +1,224 @@
+{
+  "__inputs": [],
+  "__requires": [],
+  "annotations": { "list": [] },
+  "description": "Métricas de los microservicios de Urban GYM recolectadas por Prometheus",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "id": 100,
+      "title": "🏋️ Urban GYM — Estado de Microservicios",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "mappings": [
+            { "options": { "0": { "color": "red", "index": 0, "text": "DOWN" }, "1": { "color": "green", "index": 1, "text": "UP" } }, "type": "value" }
+          ],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }, { "color": "green", "value": 1 }] }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 24, "x": 0, "y": 1 },
+      "id": 1,
+      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "center", "orientation": "horizontal", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "value_and_name" },
+      "pluginVersion": "10.0.0",
+      "targets": [
+        { "expr": "up{job=\"api-gateway\"}", "legendFormat": "API Gateway", "refId": "A" },
+        { "expr": "up{job=\"member-service\"}", "legendFormat": "Member Service", "refId": "B" },
+        { "expr": "up{job=\"booking-service\"}", "legendFormat": "Booking Service", "refId": "C" },
+        { "expr": "up{job=\"facility-service\"}", "legendFormat": "Facility Service", "refId": "D" },
+        { "expr": "up{job=\"iot-service\"}", "legendFormat": "IoT Service", "refId": "E" },
+        { "expr": "up{job=\"workout-progress-service\"}", "legendFormat": "Workout Progress", "refId": "F" },
+        { "expr": "up{job=\"billing-service\"}", "legendFormat": "Billing Service", "refId": "G" },
+        { "expr": "up{job=\"recommendation-service\"}", "legendFormat": "Recommendation", "refId": "H" },
+        { "expr": "up{job=\"admin-bff\"}", "legendFormat": "Admin BFF", "refId": "I" }
+      ],
+      "title": "Estado de Servicios (UP/DOWN)",
+      "type": "stat"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 5 },
+      "id": 101,
+      "title": "📊 Uso de Memoria Node.js por Servicio",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "axisCenteredZero": false, "axisColorMode": "text", "axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 15, "gradientMode": "opacity", "lineInterpolation": "smooth", "lineWidth": 2, "pointSize": 5, "scaleDistribution": { "type": "linear" }, "showPoints": "never", "spanNulls": false },
+          "unit": "bytes"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 6 },
+      "id": 2,
+      "options": { "legend": { "calcs": ["lastNotNull", "max"], "displayMode": "table", "placement": "bottom" }, "tooltip": { "mode": "multi", "sort": "desc" } },
+      "targets": [
+        { "expr": "member_service_nodejs_heap_size_used_bytes", "legendFormat": "Member Service", "refId": "A" },
+        { "expr": "booking_service_nodejs_heap_size_used_bytes", "legendFormat": "Booking Service", "refId": "B" },
+        { "expr": "facility_service_nodejs_heap_size_used_bytes", "legendFormat": "Facility Service", "refId": "C" },
+        { "expr": "iot_service_nodejs_heap_size_used_bytes", "legendFormat": "IoT Service", "refId": "D" },
+        { "expr": "workout_progress_service_nodejs_heap_size_used_bytes", "legendFormat": "Workout Progress", "refId": "E" },
+        { "expr": "billing_service_nodejs_heap_size_used_bytes", "legendFormat": "Billing Service", "refId": "F" },
+        { "expr": "recommendation_service_nodejs_heap_size_used_bytes", "legendFormat": "Recommendation", "refId": "G" },
+        { "expr": "admin_bff_nodejs_heap_size_used_bytes", "legendFormat": "Admin BFF", "refId": "H" },
+        { "expr": "api_gateway_nodejs_heap_size_used_bytes", "legendFormat": "API Gateway", "refId": "I" }
+      ],
+      "title": "Heap Usado (bytes)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "axisCenteredZero": false, "axisColorMode": "text", "axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 15, "gradientMode": "opacity", "lineInterpolation": "smooth", "lineWidth": 2, "pointSize": 5, "scaleDistribution": { "type": "linear" }, "showPoints": "never", "spanNulls": false },
+          "unit": "percentunit"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 6 },
+      "id": 3,
+      "options": { "legend": { "calcs": ["lastNotNull", "max"], "displayMode": "table", "placement": "bottom" }, "tooltip": { "mode": "multi", "sort": "desc" } },
+      "targets": [
+        { "expr": "rate(member_service_nodejs_cpu_user_seconds_total[1m])", "legendFormat": "Member Service CPU", "refId": "A" },
+        { "expr": "rate(booking_service_nodejs_cpu_user_seconds_total[1m])", "legendFormat": "Booking Service CPU", "refId": "B" },
+        { "expr": "rate(facility_service_nodejs_cpu_user_seconds_total[1m])", "legendFormat": "Facility Service CPU", "refId": "C" },
+        { "expr": "rate(iot_service_nodejs_cpu_user_seconds_total[1m])", "legendFormat": "IoT Service CPU", "refId": "D" },
+        { "expr": "rate(workout_progress_service_nodejs_cpu_user_seconds_total[1m])", "legendFormat": "Workout Progress CPU", "refId": "E" },
+        { "expr": "rate(billing_service_nodejs_cpu_user_seconds_total[1m])", "legendFormat": "Billing Service CPU", "refId": "F" },
+        { "expr": "rate(recommendation_service_nodejs_cpu_user_seconds_total[1m])", "legendFormat": "Recommendation CPU", "refId": "G" },
+        { "expr": "rate(admin_bff_nodejs_cpu_user_seconds_total[1m])", "legendFormat": "Admin BFF CPU", "refId": "H" },
+        { "expr": "rate(api_gateway_nodejs_cpu_user_seconds_total[1m])", "legendFormat": "API Gateway CPU", "refId": "I" }
+      ],
+      "title": "CPU User Time Rate (1m)",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 14 },
+      "id": 102,
+      "title": "⏱️ Event Loop & Handles",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "axisCenteredZero": false, "axisColorMode": "text", "axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "lineInterpolation": "smooth", "lineWidth": 2, "pointSize": 5, "scaleDistribution": { "type": "linear" }, "showPoints": "never", "spanNulls": false },
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 15 },
+      "id": 4,
+      "options": { "legend": { "calcs": ["lastNotNull", "mean"], "displayMode": "table", "placement": "bottom" }, "tooltip": { "mode": "multi", "sort": "desc" } },
+      "targets": [
+        { "expr": "rate(member_service_nodejs_eventloop_lag_seconds_sum[1m])", "legendFormat": "Member Service", "refId": "A" },
+        { "expr": "rate(booking_service_nodejs_eventloop_lag_seconds_sum[1m])", "legendFormat": "Booking Service", "refId": "B" },
+        { "expr": "rate(facility_service_nodejs_eventloop_lag_seconds_sum[1m])", "legendFormat": "Facility Service", "refId": "C" },
+        { "expr": "rate(iot_service_nodejs_eventloop_lag_seconds_sum[1m])", "legendFormat": "IoT Service", "refId": "D" },
+        { "expr": "rate(workout_progress_service_nodejs_eventloop_lag_seconds_sum[1m])", "legendFormat": "Workout Progress", "refId": "E" },
+        { "expr": "rate(billing_service_nodejs_eventloop_lag_seconds_sum[1m])", "legendFormat": "Billing Service", "refId": "F" },
+        { "expr": "rate(recommendation_service_nodejs_eventloop_lag_seconds_sum[1m])", "legendFormat": "Recommendation", "refId": "G" },
+        { "expr": "rate(api_gateway_nodejs_eventloop_lag_seconds_sum[1m])", "legendFormat": "API Gateway", "refId": "H" }
+      ],
+      "title": "Event Loop Lag (avg 1m)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "axisCenteredZero": false, "axisColorMode": "text", "axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "bars", "fillOpacity": 80, "gradientMode": "none", "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": { "type": "linear" }, "showPoints": "never", "spanNulls": false }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 15 },
+      "id": 5,
+      "options": { "legend": { "calcs": ["lastNotNull"], "displayMode": "table", "placement": "bottom" }, "tooltip": { "mode": "multi", "sort": "desc" } },
+      "targets": [
+        { "expr": "member_service_nodejs_active_handles_total", "legendFormat": "Member Service", "refId": "A" },
+        { "expr": "booking_service_nodejs_active_handles_total", "legendFormat": "Booking Service", "refId": "B" },
+        { "expr": "facility_service_nodejs_active_handles_total", "legendFormat": "Facility Service", "refId": "C" },
+        { "expr": "iot_service_nodejs_active_handles_total", "legendFormat": "IoT Service", "refId": "D" },
+        { "expr": "workout_progress_service_nodejs_active_handles_total", "legendFormat": "Workout Progress", "refId": "E" },
+        { "expr": "billing_service_nodejs_active_handles_total", "legendFormat": "Billing Service", "refId": "F" },
+        { "expr": "recommendation_service_nodejs_active_handles_total", "legendFormat": "Recommendation", "refId": "G" },
+        { "expr": "api_gateway_nodejs_active_handles_total", "legendFormat": "API Gateway", "refId": "H" }
+      ],
+      "title": "Active Handles por Servicio",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 23 },
+      "id": 103,
+      "title": "🗑️ Garbage Collection",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "axisCenteredZero": false, "axisColorMode": "text", "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "lineInterpolation": "smooth", "lineWidth": 2, "showPoints": "never" },
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 24 },
+      "id": 6,
+      "options": { "legend": { "calcs": ["lastNotNull", "mean"], "displayMode": "table", "placement": "bottom" }, "tooltip": { "mode": "multi", "sort": "desc" } },
+      "targets": [
+        { "expr": "rate(member_service_nodejs_gc_duration_seconds_sum[1m])", "legendFormat": "Member Service GC", "refId": "A" },
+        { "expr": "rate(booking_service_nodejs_gc_duration_seconds_sum[1m])", "legendFormat": "Booking Service GC", "refId": "B" },
+        { "expr": "rate(api_gateway_nodejs_gc_duration_seconds_sum[1m])", "legendFormat": "API Gateway GC", "refId": "C" },
+        { "expr": "rate(billing_service_nodejs_gc_duration_seconds_sum[1m])", "legendFormat": "Billing Service GC", "refId": "D" }
+      ],
+      "title": "Tiempo de Garbage Collection (rate 1m)",
+      "type": "timeseries"
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": ["urban-gym", "nodejs", "microservices"],
+  "templating": {
+    "list": [
+      {
+        "current": { "selected": false, "text": "Prometheus", "value": "prometheus" },
+        "hide": 0,
+        "includeAll": false,
+        "multi": false,
+        "name": "datasource",
+        "options": [],
+        "query": "prometheus",
+        "refresh": 1,
+        "regex": "",
+        "type": "datasource"
+      }
+    ]
+  },
+  "time": { "from": "now-1h", "to": "now" },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Urban GYM — Microservices Overview",
+  "uid": "urban-gym-overview",
+  "version": 1
+}
