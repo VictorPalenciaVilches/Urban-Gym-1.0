@@ -2,6 +2,10 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { createProxyMiddleware } from 'http-proxy-middleware';
 import rateLimit from 'express-rate-limit';
+import { collectDefaultMetrics, register } from 'prom-client';
+import { Request, Response } from 'express';
+
+collectDefaultMetrics({ prefix: 'api_gateway_' });
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -181,8 +185,16 @@ async function bootstrap() {
     }),
   );
 
+  // Prometheus metrics endpoint
+  const expressApp = app.getHttpAdapter().getInstance() as import('express').Application;
+  expressApp.get('/metrics', async (_req: Request, res: Response) => {
+    res.set('Content-Type', register.contentType);
+    res.end(await register.metrics());
+  });
+
   await app.listen(process.env.PORT ?? 3000);
   console.log(`API Gateway corriendo en puerto ${process.env.PORT ?? 3000}`);
+  console.log(`Métricas Prometheus en http://localhost:${process.env.PORT ?? 3000}/metrics`);
   console.log(`  → Member Service:    ${memberServiceUrl}`);
   console.log(`  → Booking Service:   ${bookingServiceUrl}`);
   console.log(`  → Facility Service:  ${facilityServiceUrl}`);
