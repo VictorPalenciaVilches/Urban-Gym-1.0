@@ -10,7 +10,7 @@ export const PLAN_PRICES: Record<string, number> = {
 
 @Injectable()
 export class StripeService {
-  private stripe: Stripe | null = null;
+  private stripe: InstanceType<typeof Stripe> | null = null;
   private readonly logger = new Logger(StripeService.name);
 
   constructor(private configService: ConfigService) {
@@ -22,7 +22,7 @@ export class StripeService {
     }
   }
 
-  private getStripe(): Stripe {
+  private getStripe(): InstanceType<typeof Stripe> {
     if (!this.stripe) {
       throw new Error('Stripe no está configurado. Agrega STRIPE_SECRET_KEY al .env');
     }
