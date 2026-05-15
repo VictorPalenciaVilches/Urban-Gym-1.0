@@ -94,15 +94,15 @@
       "id": 3,
       "options": { "legend": { "calcs": ["lastNotNull", "max"], "displayMode": "table", "placement": "bottom" }, "tooltip": { "mode": "multi", "sort": "desc" } },
       "targets": [
-        { "expr": "rate(member_service_nodejs_cpu_user_seconds_total[1m])", "legendFormat": "Member Service CPU", "refId": "A" },
-        { "expr": "rate(booking_service_nodejs_cpu_user_seconds_total[1m])", "legendFormat": "Booking Service CPU", "refId": "B" },
-        { "expr": "rate(facility_service_nodejs_cpu_user_seconds_total[1m])", "legendFormat": "Facility Service CPU", "refId": "C" },
-        { "expr": "rate(iot_service_nodejs_cpu_user_seconds_total[1m])", "legendFormat": "IoT Service CPU", "refId": "D" },
-        { "expr": "rate(workout_progress_service_nodejs_cpu_user_seconds_total[1m])", "legendFormat": "Workout Progress CPU", "refId": "E" },
-        { "expr": "rate(billing_service_nodejs_cpu_user_seconds_total[1m])", "legendFormat": "Billing Service CPU", "refId": "F" },
-        { "expr": "rate(recommendation_service_nodejs_cpu_user_seconds_total[1m])", "legendFormat": "Recommendation CPU", "refId": "G" },
-        { "expr": "rate(admin_bff_nodejs_cpu_user_seconds_total[1m])", "legendFormat": "Admin BFF CPU", "refId": "H" },
-        { "expr": "rate(api_gateway_nodejs_cpu_user_seconds_total[1m])", "legendFormat": "API Gateway CPU", "refId": "I" }
+        { "expr": "rate(member_service_process_cpu_user_seconds_total[1m])", "legendFormat": "Member Service CPU", "refId": "A" },
+        { "expr": "rate(booking_service_process_cpu_user_seconds_total[1m])", "legendFormat": "Booking Service CPU", "refId": "B" },
+        { "expr": "rate(facility_service_process_cpu_user_seconds_total[1m])", "legendFormat": "Facility Service CPU", "refId": "C" },
+        { "expr": "rate(iot_service_process_cpu_user_seconds_total[1m])", "legendFormat": "IoT Service CPU", "refId": "D" },
+        { "expr": "rate(workout_progress_service_process_cpu_user_seconds_total[1m])", "legendFormat": "Workout Progress CPU", "refId": "E" },
+        { "expr": "rate(billing_service_process_cpu_user_seconds_total[1m])", "legendFormat": "Billing Service CPU", "refId": "F" },
+        { "expr": "rate(recommendation_service_process_cpu_user_seconds_total[1m])", "legendFormat": "Recommendation CPU", "refId": "G" },
+        { "expr": "rate(admin_bff_process_cpu_user_seconds_total[1m])", "legendFormat": "Admin BFF CPU", "refId": "H" },
+        { "expr": "rate(api_gateway_process_cpu_user_seconds_total[1m])", "legendFormat": "API Gateway CPU", "refId": "I" }
       ],
       "title": "CPU User Time Rate (1m)",
       "type": "timeseries"
@@ -128,14 +128,14 @@
       "id": 4,
       "options": { "legend": { "calcs": ["lastNotNull", "mean"], "displayMode": "table", "placement": "bottom" }, "tooltip": { "mode": "multi", "sort": "desc" } },
       "targets": [
-        { "expr": "rate(member_service_nodejs_eventloop_lag_seconds_sum[1m])", "legendFormat": "Member Service", "refId": "A" },
-        { "expr": "rate(booking_service_nodejs_eventloop_lag_seconds_sum[1m])", "legendFormat": "Booking Service", "refId": "B" },
-        { "expr": "rate(facility_service_nodejs_eventloop_lag_seconds_sum[1m])", "legendFormat": "Facility Service", "refId": "C" },
-        { "expr": "rate(iot_service_nodejs_eventloop_lag_seconds_sum[1m])", "legendFormat": "IoT Service", "refId": "D" },
-        { "expr": "rate(workout_progress_service_nodejs_eventloop_lag_seconds_sum[1m])", "legendFormat": "Workout Progress", "refId": "E" },
-        { "expr": "rate(billing_service_nodejs_eventloop_lag_seconds_sum[1m])", "legendFormat": "Billing Service", "refId": "F" },
-        { "expr": "rate(recommendation_service_nodejs_eventloop_lag_seconds_sum[1m])", "legendFormat": "Recommendation", "refId": "G" },
-        { "expr": "rate(api_gateway_nodejs_eventloop_lag_seconds_sum[1m])", "legendFormat": "API Gateway", "refId": "H" }
+        { "expr": "member_service_nodejs_eventloop_lag_p50_seconds", "legendFormat": "Member Service", "refId": "A" },
+        { "expr": "booking_service_nodejs_eventloop_lag_p50_seconds", "legendFormat": "Booking Service", "refId": "B" },
+        { "expr": "facility_service_nodejs_eventloop_lag_p50_seconds", "legendFormat": "Facility Service", "refId": "C" },
+        { "expr": "iot_service_nodejs_eventloop_lag_p50_seconds", "legendFormat": "IoT Service", "refId": "D" },
+        { "expr": "workout_progress_service_nodejs_eventloop_lag_p50_seconds", "legendFormat": "Workout Progress", "refId": "E" },
+        { "expr": "billing_service_nodejs_eventloop_lag_p50_seconds", "legendFormat": "Billing Service", "refId": "F" },
+        { "expr": "recommendation_service_nodejs_eventloop_lag_p50_seconds", "legendFormat": "Recommendation", "refId": "G" },
+        { "expr": "api_gateway_nodejs_eventloop_lag_p50_seconds", "legendFormat": "API Gateway", "refId": "H" }
       ],
       "title": "Event Loop Lag (avg 1m)",
       "type": "timeseries"
