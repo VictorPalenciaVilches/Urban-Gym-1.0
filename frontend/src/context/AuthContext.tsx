@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { authApi, membersApi } from '../api/api';
+import { clearAuthCredentials } from '../utils/authStorage';
 
 interface User {
   id: string;
@@ -53,12 +54,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             localStorage.setItem('accessToken', data.accessToken);
             localStorage.setItem('refreshToken', data.refreshToken);
           } catch {
-            localStorage.clear();
+            clearAuthCredentials();
             setLoading(false);
             return;
           }
         } else {
-          localStorage.clear();
+          clearAuthCredentials();
           setLoading(false);
           return;
         }
@@ -98,7 +99,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = () => {
-    localStorage.clear();
+    clearAuthCredentials();
     setUser(null);
   };
 

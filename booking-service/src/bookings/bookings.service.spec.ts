@@ -2,8 +2,10 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { NotFoundException, ConflictException, BadRequestException } from '@nestjs/common';
 import { BookingsService } from './bookings.service';
 import { SupabaseService } from '../supabase/supabase.service';
+import { RedisService } from '../redis/redis.service';
 
 const mockSingle = jest.fn();
+const mockRpc = jest.fn();
 const mockQueryChain: any = {
   select: jest.fn().mockReturnThis(),
   insert: jest.fn().mockReturnThis(),
@@ -17,10 +19,17 @@ const mockQueryChain: any = {
   single: mockSingle,
 };
 
+const mockSupabaseClient = {
+  from: jest.fn(() => mockQueryChain),
+  rpc: mockRpc,
+};
+
 const mockSupabaseService = {
-  getClient: jest.fn(() => ({
-    from: jest.fn(() => mockQueryChain),
-  })),
+  getClient: jest.fn(() => mockSupabaseClient),
+};
+
+const mockRedisService = {
+  publish: jest.fn().mockResolvedValue(undefined),
 };
 
 global.fetch = jest.fn(() => Promise.resolve({ ok: true, json: () => Promise.resolve({}) })) as jest.Mock;
@@ -37,11 +46,13 @@ describe('BookingsService', () => {
       }
     });
     mockSingle.mockReset();
+    mockRpc.mockReset();
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         BookingsService,
         { provide: SupabaseService, useValue: mockSupabaseService },
+        { provide: RedisService, useValue: mockRedisService },
       ],
     }).compile();
     service = module.get<BookingsService>(BookingsService);
@@ -97,22 +108,29 @@ describe('BookingsService', () => {
 
   describe('createBooking', () => {
     it('éxito', async () => {
-      mockSingle
-        .mockResolvedValueOnce({ data: { id: 's1', available_spots: 5 }, error: null }) // schedule
-        .mockResolvedValueOnce({ data: null, error: null }) // existing
-        .mockResolvedValueOnce({ data: { id: 'b1' }, error: null }); // insert
+      mockSingle.mockResolvedValueOnce({ data: null, error: null }); // sin reserva previa (.single duplicados)
+      mockRpc.mockResolvedValueOnce({
+        data: { id: 'b1', schedule_id: 's1', member_id: 'm1' },
+        error: null,
+      }); // RPC reserve_spot
       const res = await service.createBooking({ schedule_id: 's1' }, 'm1');
       expect(res.id).toBe('b1');
     });
     it('no cupos', async () => {
-      mockSingle.mockResolvedValueOnce({ data: { id: 's1', available_spots: 0 }, error: null });
+      mockSingle.mockResolvedValueOnce({ data: null, error: null });
+      mockRpc.mockResolvedValueOnce({
+        data: null,
+        error: { message: 'no_spots' },
+      });
       await expect(service.createBooking({ schedule_id: 's1' }, 'm1')).rejects.toThrow(BadRequestException);
     });
     it('ya reservado', async () => {
-      mockSingle
-        .mockResolvedValueOnce({ data: { id: 's1', available_spots: 5 }, error: null })
-        .mockResolvedValueOnce({ data: { id: 'b1' }, error: null });
+      mockSingle.mockResolvedValueOnce({
+        data: { id: 'b1' },
+        error: null,
+      }); // duplicate check finds confirmed booking
       await expect(service.createBooking({ schedule_id: 's1' }, 'm1')).rejects.toThrow(ConflictException);
+      expect(mockRpc).not.toHaveBeenCalled();
     });
   });
 

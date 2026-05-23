@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { WorkoutsService, RawWorkoutData } from './workouts.service';
 import { SupabaseService } from '../supabase/supabase.service';
+import { RedisService } from '../redis/redis.service';
 
 const mockSingle = jest.fn();
 const mockOrder = jest.fn(() => ({ data: [], error: null }));
@@ -13,6 +14,9 @@ const mockSchema = jest.fn(() => ({ from: mockFrom }));
 const mockSupabaseClient = { schema: mockSchema };
 const mockSupabaseService = { getClient: jest.fn(() => mockSupabaseClient) };
 const mockEventEmitter = { emit: jest.fn() };
+const mockRedisService = {
+  publish: jest.fn().mockResolvedValue(undefined),
+};
 
 global.fetch = jest.fn(() =>
   Promise.resolve({ ok: true, json: () => Promise.resolve({}) }),
@@ -28,6 +32,7 @@ describe('WorkoutsService', () => {
         WorkoutsService,
         { provide: SupabaseService, useValue: mockSupabaseService },
         { provide: EventEmitter2, useValue: mockEventEmitter },
+        { provide: RedisService, useValue: mockRedisService },
       ],
     }).compile();
     service = module.get<WorkoutsService>(WorkoutsService);

@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { NotFoundException } from '@nestjs/common';
 import { BillingService } from './billing.service';
 import { SupabaseService } from '../supabase/supabase.service';
+import { RedisService } from '../redis/redis.service';
 import { MercadoPagoService, PLAN_PRICES_CENTS } from '../mercado-pago/mercadopago.service';
 
 // Deep chainable mock builder
@@ -45,6 +46,10 @@ const mockMercadoPagoService = {
   getPlanAmountCents: jest.fn((plan: string) => PLAN_PRICES_CENTS[plan] ?? PLAN_PRICES_CENTS.basic),
 };
 
+const mockRedisService = {
+  publish: jest.fn().mockResolvedValue(undefined),
+};
+
 global.fetch = jest.fn(() =>
   Promise.resolve({ ok: true, json: () => Promise.resolve({}) }),
 ) as jest.Mock;
@@ -73,6 +78,7 @@ describe('BillingService', () => {
         BillingService,
         { provide: SupabaseService, useValue: mockSupabaseService },
         { provide: MercadoPagoService, useValue: mockMercadoPagoService },
+        { provide: RedisService, useValue: mockRedisService },
       ],
     }).compile();
     service = module.get<BillingService>(BillingService);

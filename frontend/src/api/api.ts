@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { clearAuthCredentials } from '../utils/authStorage';
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3000',
@@ -16,7 +17,7 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401 && !error.config?.url?.includes('/auth/login')) {
-      localStorage.clear();
+      clearAuthCredentials();
       window.location.href = '/login';
     }
     return Promise.reject(error);
