@@ -2,17 +2,14 @@ import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { REMEMBERED_LOGIN_EMAIL_KEY } from '../utils/authStorage';
+
 import { Dumbbell, Loader2, Mail, Lock } from 'lucide-react';
 
 export default function LoginPage() {
   const { login, user } = useAuth();
   const navigate = useNavigate();
-  const [email, setEmail] = useState(() => localStorage.getItem(REMEMBERED_LOGIN_EMAIL_KEY) ?? '');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [rememberMe, setRememberMe] = useState(
-    () => Boolean(localStorage.getItem(REMEMBERED_LOGIN_EMAIL_KEY)),
-  );
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -28,11 +25,6 @@ export default function LoginPage() {
     setLoading(true);
     try {
       await login(email, password);
-      if (rememberMe) {
-        localStorage.setItem(REMEMBERED_LOGIN_EMAIL_KEY, email.trim());
-      } else {
-        localStorage.removeItem(REMEMBERED_LOGIN_EMAIL_KEY);
-      }
       const stored = localStorage.getItem('user');
       const userData = stored ? JSON.parse(stored) : null;
       const redirect = userData?.role === 'admin' ? '/admin' : userData?.role === 'trainer' ? '/trainer' : '/dashboard';
@@ -140,28 +132,16 @@ export default function LoginPage() {
                     style={{ border: '1.5px solid #e5e7eb', background: '#f9fafb' }}
                     onFocus={(e) => { e.target.style.borderColor = '#6366f1'; e.target.style.background = '#fff'; }}
                     onBlur={(e) => { e.target.style.borderColor = '#e5e7eb'; e.target.style.background = '#f9fafb'; }}
-                    placeholder="••••••••"
                   />
+                </div>
+                <div className="flex justify-end mt-2">
+                  <Link to="/forgot-password" className="text-xs font-semibold text-gray-500 hover:text-indigo-600 transition-colors">
+                    ¿Olvidaste tu contraseña?
+                  </Link>
                 </div>
               </div>
 
-              <div className="flex flex-col gap-2 pt-0.5">
-                <label htmlFor="remember-login" className="flex items-start gap-2.5 cursor-pointer select-none">
-                  <input
-                    id="remember-login"
-                    type="checkbox"
-                    checked={rememberMe}
-                    onChange={(e) => setRememberMe(e.target.checked)}
-                    className="mt-0.5 h-4 w-4 shrink-0 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                  />
-                  <span className="text-sm text-gray-700 leading-snug">
-                    <span className="font-semibold text-gray-800">Recordar usuario en este dispositivo</span>
-                    <span className="block text-xs font-normal text-gray-500 mt-1">
-                      La contraseña no se guarda en UrbanGym. Tu navegador puede ofrecer guardarla de forma segura si lo permite.
-                    </span>
-                  </span>
-                </label>
-              </div>
+
 
               <button
                 type="submit"

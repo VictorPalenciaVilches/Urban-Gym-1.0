@@ -2,12 +2,14 @@ import {
   Injectable,
   ConflictException,
   UnauthorizedException,
+  NotFoundException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
 import * as QRCode from 'qrcode';
 import { SupabaseService } from '../supabase/supabase.service';
+import { MailService } from './mail.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 
@@ -17,6 +19,7 @@ export class AuthService {
     private supabaseService: SupabaseService,
     private jwtService: JwtService,
     private configService: ConfigService,
+    private mailService: MailService,
   ) {}
 
   async register(registerDto: RegisterDto) {
@@ -234,5 +237,62 @@ export class AuthService {
     } catch {
       throw new UnauthorizedException('Refresh token inválido o expirado');
     }
+  }
+
+  async forgotPassword(email: string) {
+    const { data: member } = await this.supabaseService
+      .getClient()
+      .schema('members')
+      .from('members')
+      .select('id, name, email')
+      .eq('email', email)
+      .single();
+
+    if (!member) {
+      // Por seguridad, no lanzar error si no existe, simulamos éxito para evitar enumeración de correos.
+      return { message: 'Si el correo existe, se enviará un enlace de recuperación.' };
+    }
+
+    const resetToken = await this.jwtService.signAsync(
+      { sub: member.id, email: member.email, purpose: 'password-reset' },
+      { secret: this.configService.get<string>('JWT_SECRET')!, expiresIn: '15m' }
+    );
+
+    const frontendUrl = this.configService.get<string>('FRONTEND_URL') || 'http://localhost:5173';
+    const resetLink = `${frontendUrl}/reset-password?token=${resetToken}`;
+
+    await this.mailService.sendPasswordResetEmail(member.email, resetLink, member.name);
+
+    return { message: 'Correo enviado.' };
+  }
+
+  async resetPassword(token: string, newPassword: string) {
+    let payload;
+    try {
+      payload = await this.jwtService.verifyAsync(token, {
+        secret: this.configService.get<string>('JWT_SECRET')!,
+      });
+    } catch {
+      throw new UnauthorizedException('El enlace de recuperación es inválido o ha expirado.');
+    }
+
+    if (payload.purpose !== 'password-reset') {
+      throw new UnauthorizedException('Token inválido.');
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    const { error } = await this.supabaseService
+      .getClient()
+      .schema('members')
+      .from('members')
+      .update({ password: hashedPassword })
+      .eq('id', payload.sub);
+
+    if (error) {
+      throw new ConflictException('Error al actualizar la contraseña: ' + error.message);
+    }
+
+    return { message: 'Contraseña actualizada correctamente.' };
   }
 }

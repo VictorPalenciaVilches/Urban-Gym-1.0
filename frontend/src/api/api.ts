@@ -33,6 +33,8 @@ export const authApi = {
     api.post('/auth/refresh', { refreshToken }),
   getQR: () => api.get('/auth/qr-code'),
   validateQR: (token: string) => api.post('/auth/validate-qr', { token }),
+  forgotPassword: (email: string) => api.post('/auth/forgot-password', { email }),
+  resetPassword: (token: string, newPassword: string) => api.post('/auth/reset-password', { token, newPassword }),
 };
 
 export const membersApi = {

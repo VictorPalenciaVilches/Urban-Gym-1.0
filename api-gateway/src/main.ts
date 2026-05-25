@@ -42,6 +42,15 @@ async function bootstrap() {
     }),
   );
 
+  app.use(
+    '/auth/forgot-password',
+    rateLimit({
+      windowMs: 15 * 60 * 1000,
+      max: 3,
+      message: { statusCode: 429, message: 'Límite de peticiones alcanzado. Intenta en 15 minutos.' },
+    }),
+  );
+
   const memberServiceUrl =
     process.env.MEMBER_SERVICE_URL || 'http://localhost:3001';
   const bookingServiceUrl =
