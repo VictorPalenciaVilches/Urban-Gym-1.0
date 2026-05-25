@@ -6,6 +6,7 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { AuthService } from './auth.service';
+import { MailService } from './mail.service';
 import { SupabaseService } from '../supabase/supabase.service';
 import * as bcrypt from 'bcrypt';
 
@@ -73,6 +74,7 @@ describe('AuthService', () => {
         { provide: SupabaseService, useValue: mockSupabaseService },
         { provide: JwtService, useValue: mockJwtService },
         { provide: ConfigService, useValue: mockConfigService },
+        { provide: MailService, useValue: { sendPasswordResetEmail: jest.fn() } },
       ],
     }).compile();
 
